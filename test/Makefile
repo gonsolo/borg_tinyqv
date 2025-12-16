@@ -41,7 +41,7 @@ USER_PERIPHERAL_35 = prng.test
 USER_PERIPHERAL_36 = 
 USER_PERIPHERAL_37 = intercal_alu.test
 USER_PERIPHERAL_38 = 
-USER_PERIPHERAL_39 = affinex.test
+USER_PERIPHERAL_39 = borg.test
 
 expand_tests = $(foreach num,$(1),$(USER_PERIPHERAL_$(num)))
 PERI_NUMBERS = $(shell seq 2 39)

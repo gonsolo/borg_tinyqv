@@ -834,21 +834,38 @@ module tinyQV_peripherals #(parameter CLOCK_MHZ=64) (
         .data_ready(data_ready_from_user_peri[22])
     );
 
-    tqvp_affinex i_user_peri39 (
-        .clk(clk),
-        .rst_n(rst_n),
+    //tqvp_affinex i_user_peri39 (
+    //    .clk(clk),
+    //    .rst_n(rst_n),
 
-        .ui_in(ui_in),
-        .uo_out(uo_out_from_user_peri[23]),
+    //    .ui_in(ui_in),
+    //    .uo_out(uo_out_from_user_peri[23]),
 
-        .address(addr_in[5:0]),
-        .data_in(data_in),
+    //    .address(addr_in[5:0]),
+    //    .data_in(data_in),
 
-        .data_write_n(data_write_n    | {2{~peri_user[23]}}),
-        .data_read_n(data_read_n_peri | {2{~peri_user[23]}}),
+    //    .data_write_n(data_write_n    | {2{~peri_user[23]}}),
+    //    .data_read_n(data_read_n_peri | {2{~peri_user[23]}}),
 
-        .data_out(data_from_user_peri[23]),
-        .data_ready(data_ready_from_user_peri[23])
+    //    .data_out(data_from_user_peri[23]),
+    //    .data_ready(data_ready_from_user_peri[23])
+    //);
+
+    Borg i_user_peri39 (
+        .clock(clk),
+        .reset(rst_n),
+
+        .io_ui_in(ui_in),
+        .io_uo_out(uo_out_from_user_peri[23]),
+
+        .io_address(addr_in[5:0]),
+        .io_data_in(data_in),
+
+        .io_data_write_n(data_write_n    | {2{~peri_user[23]}}),
+        .io_data_read_n(data_read_n_peri | {2{~peri_user[23]}}),
+
+        .io_data_out(data_from_user_peri[23]),
+        .io_data_ready(data_ready_from_user_peri[23])
     );
 
 endmodule

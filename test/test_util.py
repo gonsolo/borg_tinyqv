@@ -9,26 +9,23 @@ from riscvmodel.regnames import x0, gp, tp, a0
 
 
 async def reset(dut, latency=1, ui_in=0x80):
-    # Reset
-    dut._log.info(f"Reset, latency {latency}")
-    dut.ena.value = 1
-    dut.ui_in_base.value = ui_in
-    dut.uio_in[0].value = 0
-    dut.uio_in[3].value = 0
-    dut.uio_in[6].value = 0
-    dut.uio_in[7].value = 0
-    dut.qspi_data_in.value = 0
-    dut.rst_n.value = 1
-    dut.uart_rx.value = 1
-    await ClockCycles(dut.clk, 2)
-    dut.rst_n.value = 0
-    dut.latency_cfg.value = latency
-    await ClockCycles(dut.clk, 1)
-    assert dut.uio_oe.value == 0
-    await ClockCycles(dut.clk, 9)
-    dut.rst_n.value = 1
-    await ClockCycles(dut.clk, 1)
-    assert dut.uio_oe.value == 0b11001001
+  # Reset
+  dut._log.info(f"Reset, latency {latency}")
+  dut.ena.value = 1
+  dut.ui_in_base.value = ui_in
+  dut.uio_in.value = 0
+  dut.qspi_data_in.value = 0
+  dut.rst_n.value = 1
+  dut.uart_rx.value = 1
+  await ClockCycles(dut.clk, 2)
+  dut.rst_n.value = 0
+  dut.latency_cfg.value = latency
+  await ClockCycles(dut.clk, 1)
+  assert dut.uio_oe.value == 0
+  await ClockCycles(dut.clk, 9)
+  dut.rst_n.value = 1
+  await ClockCycles(dut.clk, 1)
+  assert dut.uio_oe.value == 0b11001001
 
 select = None
 
@@ -277,7 +274,7 @@ async def expect_store(dut, addr, bytes=4, allow_long_delay=False):
                     await ClockCycles(dut.clk, 1, False)
                 assert dut.qspi_clk_out.value == 1
                 assert dut.qspi_data_oe.value == 0xF
-                val |= dut.qspi_data_out.value << (nibble_shift_order[j % 8])
+                val |= dut.qspi_data_out.value.to_unsigned() << (nibble_shift_order[j % 8])
                 await ClockCycles(dut.clk, 1, False)
                 assert select.value == (1 if j == bytes*2-1 else 0)
                 assert dut.qspi_clk_out.value == 0
@@ -295,7 +292,7 @@ async def expect_store(dut, addr, bytes=4, allow_long_delay=False):
         await ClockCycles(dut.clk, 1)
         if dut.qspi_flash_select.value == 0:
             if hasattr(dut.user_project, "i_tinyqv"):
-                await start_read(dut, dut.user_project.i_tinyqv.instr_addr.value.integer * 2)
+                await start_read(dut, dut.user_project.i_tinyqv.instr_addr.value.to_unsigned() * 2)
             else:
                 await start_read(dut, None)
             break
