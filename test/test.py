@@ -120,7 +120,7 @@ async def test_start(dut):
     await send_instr(dut, InstructionSW(tp, x1, 0x40).encode())
     for _ in range(3):
         await send_instr(dut, InstructionADDI(x0, x0, 0).encode())
-    assert (dut.uo_out.value & gpio_sel) == (gpio_out & gpio_sel)
+    assert (dut.uo_out.value.to_unsigned() & gpio_sel) == (gpio_out & gpio_sel)
 
   # Ensure uo_out is normally high
   await send_instr(dut, InstructionADDI(x1, x0, 0x80).encode())
@@ -274,7 +274,7 @@ async def test_debug_reg(dut):
     await send_instr(dut, InstructionADDI(i+8, x0 if i == 0 else (i+7), 0x102*i).encode())
     await start_nops(dut)
     for i in range(24):
-        if dut.uo_out[7].value == 1:
+        if dut.uo_out.value[7] == 1:
             break
         await ClockCycles(dut.clk, 1)
     else:
@@ -282,7 +282,7 @@ async def test_debug_reg(dut):
 
     await ClockCycles(dut.clk, 1)
     for j in range(8):
-        assert ((dut.uo_out.value >> 2) & 0xF) == ((val >> (4 * j)) & 0xF)
+        assert ((int(dut.uo_out.value) >> 2) & 0xF) == ((val >> (4 * j)) & 0xF)
         await ClockCycles(dut.clk, 1)
     await stop_nops()
 
@@ -297,11 +297,11 @@ async def test_pwm(dut, pwm_value, pwm_strobe):
     dut._log.info(f"assert {pwm_strobe * pwm_value} clocks of PWM high")
     # assert the PWM is on for the length of time
     for i in range(pwm_value):
-        assert dut.uio_out[7].value == 1, f"failed on cycle {i}"
+        assert dut.uio_out.value[7] == 1, f"failed on cycle {i}"
         await ClockCycles(dut.clk, pwm_strobe)
     dut._log.info(f"assert {pwm_strobe * (255 - pwm_value)} clocks of PWM low")
     for i in range(255 - pwm_value):
-        assert dut.uio_out[7].value == 0, f"failed on cycle {i}"
+        assert dut.uio_out.value[7] == 0, f"failed on cycle {i}"
         await ClockCycles(dut.clk, pwm_strobe)
 
 @cocotb.test()

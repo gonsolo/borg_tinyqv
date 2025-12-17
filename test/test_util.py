@@ -193,7 +193,7 @@ async def expect_load(dut, addr, val, bytes=4):
         await ClockCycles(dut.clk, 1)
         if dut.qspi_flash_select.value == 0:
             if hasattr(dut.user_project, "i_tinyqv"):
-                await start_read(dut, dut.user_project.i_tinyqv.instr_addr.value.integer * 2)
+                await start_read(dut, dut.user_project.i_tinyqv.instr_addr.value.to_unsigned() * 2)
             else:
                 await start_read(dut, None)
             break
