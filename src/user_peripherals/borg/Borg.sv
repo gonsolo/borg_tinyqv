@@ -57,17 +57,22 @@ module Borg(	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:6:7
   output        io_user_interrupt	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:7:16
 );
 
-  reg  [31:0] reg_value;	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:21:28
-  wire        is_writing = io_data_write_n == 2'h2;	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:6:7, :24:38
-  reg  [31:0] result_to_read;	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:34:33
-  reg         read_ready;	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:37:29
+  reg  [31:0] operand_A;	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:21:28
+  reg  [31:0] operand_B;	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:22:28
+  reg  [31:0] sum_result;	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:41:29
+  wire        is_writing = io_data_write_n == 2'h2;	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:6:7, :30:38
   always @(posedge clock) begin	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:6:7
-    if (reset)	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:6:7
-      reg_value <= 32'h0;	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:21:28
-    else if (is_writing & io_address == 6'h0)	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:24:38, :28:{21,35}
-      reg_value <= io_data_in;	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:21:28
-    result_to_read <= reg_value + 32'h1;	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:21:28, :34:{33,44}
-    read_ready <= io_data_read_n == 2'h2;	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:6:7, :25:37, :37:29
+    if (reset) begin	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:6:7
+      operand_A <= 32'h0;	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:21:28
+      operand_B <= 32'h0;	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:22:28
+    end
+    else begin	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:6:7
+      if (is_writing & ~(|io_address))	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:21:28, :30:38, :31:22, :32:{25,37}, :33:23
+        operand_A <= io_data_in;	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:21:28
+      if (is_writing & (|io_address) & io_address == 6'h4)	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:22:28, :30:38, :31:22, :32:{25,37}, :34:{32,44}
+        operand_B <= io_data_in;	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:22:28
+    end
+    sum_result <= operand_A + operand_B;	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:21:28, :22:28, :41:{29,40}
   end // always @(posedge)
   `ifdef ENABLE_INITIAL_REG_	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:6:7
     `ifdef FIRRTL_BEFORE_INITIAL	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:6:7
@@ -82,18 +87,21 @@ module Borg(	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:6:7
         for (logic [1:0] i = 2'h0; i < 2'h3; i += 2'h1) begin
           _RANDOM[i] = `RANDOM;	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:6:7
         end	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:6:7
-        reg_value = _RANDOM[2'h0];	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:6:7, :21:28
-        result_to_read = _RANDOM[2'h1];	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:6:7, :34:33
-        read_ready = _RANDOM[2'h2][0];	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:6:7, :37:29
+        operand_A = _RANDOM[2'h0];	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:6:7, :21:28
+        operand_B = _RANDOM[2'h1];	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:6:7, :22:28
+        sum_result = _RANDOM[2'h2];	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:6:7, :41:29
       `endif // RANDOMIZE_REG_INIT
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:6:7
       `FIRRTL_AFTER_INITIAL	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:6:7
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  assign io_data_out = result_to_read;	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:6:7, :34:33
-  assign io_data_ready = is_writing | read_ready;	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:6:7, :24:38, :37:29, :38:33
-  assign io_uo_out = 8'h0;	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:6:7, :43:15
-  assign io_user_interrupt = 1'h0;	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:6:7, :28:35
+  assign io_data_out =
+    io_address == 6'h8
+      ? sum_result
+      : io_address == 6'h4 ? operand_B : (|io_address) ? 32'h0 : operand_A;	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:6:7, :21:28, :22:28, :32:25, :34:32, :41:29, :44:46
+  assign io_data_ready = 1'h1;	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:6:7, :52:19
+  assign io_uo_out = 8'h0;	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:6:7, :53:15
+  assign io_user_interrupt = 1'h0;	// home/gonsolo/work/borg_peripheral/borg/src/Borg.scala:6:7, :44:46
 endmodule
 
