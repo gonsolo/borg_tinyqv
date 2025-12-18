@@ -39,15 +39,23 @@ async def test_borg_float_addition(dut):
     dut._log.info(f"Initial Check: {val_a} + {val_b} = {actual_float}")
     assert abs(actual_float - expected_sum) < EPSILON, f"Failed: Got {actual_float}"
 
-    # 2. Verify Register Integrity
     read_bits_a = await tqv.read_word_reg(ADDR_A)
     assert read_bits_a == float_to_bits(val_a), "Operand A corrupted!"
 
-    # 3. Stress Test Loop (Identical to Test 1)
-    for a, b in [(10.0, 20.0), (0.1, 0.2), (-5.5, 2.25)]:
+    test_pairs = [
+        (10.0, 20.0),
+        (0.1, 0.2),
+        (-5.5, 2.25),
+        (100.0, 0.0),
+        (1.23e-2, 4.56e-2)
+    ]
+
+    for a, b in test_pairs:
         await tqv.write_word_reg(ADDR_A, float_to_bits(a))
         await tqv.write_word_reg(ADDR_B, float_to_bits(b))
         res = bits_to_float(await tqv.read_word_reg(ADDR_RESULT))
-        assert abs(res - (a + b)) < EPSILON, f"Loop failed: {a} + {b} = {res}"
+
+        assert abs(res - (a + b)) < EPSILON, f"Iter failed: {a} + {b} = {res}"
+        dut._log.info(f"Passed: {a} + {b} = {res}")
 
     dut._log.info("Borg Floating Point Addition Test Passed!")
